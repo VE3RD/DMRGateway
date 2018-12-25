@@ -65,6 +65,7 @@ m_infoPower(0U),
 m_infoLatitude(0.0F),
 m_infoLongitude(0.0F),
 m_infoHeight(0),
+m_infoGWmode(0),
 m_infoLocation(),
 m_infoDescription(),
 m_infoURL(),
@@ -279,6 +280,8 @@ bool CConf::read()
 				m_infoLongitude = float(::atof(value));
 			else if (::strcmp(key, "Height") == 0)
 				m_infoHeight = ::atoi(value);
+			else if (::strcmp(key, "GWmode") == 0)
+				m_infoGWmode = ::atoi(value);
 			else if (::strcmp(key, "Location") == 0)
 				m_infoLocation = value;
 			else if (::strcmp(key, "Description") == 0)
@@ -869,6 +872,10 @@ float CConf::getInfoLongitude() const
 int CConf::getInfoHeight() const
 {
 	return m_infoHeight;
+}
+int CConf::getInfoGWmode() const
+{
+	return m_infoGWmode;
 }
 
 std::string CConf::getInfoLocation() const

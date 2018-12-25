@@ -59,6 +59,9 @@ static bool m_killed = false;
 static int  m_signal = 0;
 unsigned int selected_network = 4;
 unsigned int sigcnt =0;
+//int GWmode = 0;   // 0=original with no switching,  1 =new using 90001-90005
+unsigned int GWmode =1;
+
 
 
 #if !defined(_WIN32) && !defined(_WIN64)
@@ -529,6 +532,14 @@ int CDMRGateway::run()
 			FLCO flco = data.getFLCO();
 
 			if(dstId >= 90000 && dstId <= 90005){
+                               if (GWmode == 0 ) {
+					dstId=9000;
+					LogMessage("Original Gateway Mode Selected");
+				} else {
+		
+					LogMessage("Switched Gateway Mode Selected");
+				}
+
 				LogDebug("TESTAA Network keyed: %d", dstId);
 				selected_network = dstId-90000;
 			} else{
@@ -610,7 +621,7 @@ int CDMRGateway::run()
 
 				bool rewritten = false;
 
-                           if (m_dmrNetwork1 != NULL && selected_network ==1) {
+                           if (m_dmrNetwork1 != NULL && ((selected_network == 1 && GWmode ==1) || GWmode == 0 )) {
 					rewritten=false;
                                         // Rewrite the slot and/or TG or neither
                                         for (std::vector<CRewrite*>::iterator it = m_dmr1RFRewrites.begin(); it != m_dmr1RFRewrites.end(); ++it) {
@@ -644,7 +655,7 @@ int CDMRGateway::run()
                                         }
                               }
 
-				if (m_dmrNetwork2 != NULL && selected_network ==2) {
+                           if (m_dmrNetwork2 != NULL && ((selected_network == 2 && GWmode ==1) || GWmode == 0 )) {
 					// Rewrite the slot and/or TG or neither
 					rewritten=false;
 					for (std::vector<CRewrite*>::iterator it = m_dmr2RFRewrites.begin(); it != m_dmr2RFRewrites.end(); ++it) {
@@ -677,7 +688,7 @@ int CDMRGateway::run()
 						}
 					}
 				}
-				if (m_dmrNetwork3 != NULL && selected_network ==3) {
+                           if (m_dmrNetwork3 != NULL && ((selected_network == 3 && GWmode ==1) || GWmode == 0 )) {
 					rewritten=false;
 					// Rewrite the slot and/or TG or neither
 					for (std::vector<CRewrite*>::iterator it = m_dmr3RFRewrites.begin(); it != m_dmr3RFRewrites.end(); ++it) {
@@ -711,7 +722,7 @@ int CDMRGateway::run()
 					}
 				}
 
-				if (m_dmrNetwork4 != NULL && selected_network ==4) {
+                           if (m_dmrNetwork4 != NULL && ((selected_network == 4 && GWmode ==1) || GWmode == 0 )) {
 					// Rewrite the slot and/or TG or neither
 					rewritten=false;	
 					for (std::vector<CRewrite*>::iterator it = m_dmr4RFRewrites.begin(); it != m_dmr4RFRewrites.end(); ++it) {
@@ -742,7 +753,7 @@ int CDMRGateway::run()
 						}
 					}
 				}
-				if (m_dmrNetwork5 != NULL && selected_network ==5) {
+                           if (m_dmrNetwork5 != NULL && ((selected_network == 5 && GWmode ==1) || GWmode == 0 )) {
 				rewritten = false;
 					// Rewrite the slot and/or TG or neither
 					for (std::vector<CRewrite*>::iterator it = m_dmr5RFRewrites.begin(); it != m_dmr5RFRewrites.end(); ++it) {
@@ -799,7 +810,7 @@ int CDMRGateway::run()
 			}
 		}
 
-		if (m_dmrNetwork1 != NULL && selected_network == 1 ) {
+                if (m_dmrNetwork1 != NULL && ((selected_network == 1 && GWmode ==1) || GWmode == 0 )) {
 			ret = m_dmrNetwork1->read(data);
 			if (ret) {
 				unsigned int slotNo = data.getSlotNo();
@@ -814,7 +825,7 @@ int CDMRGateway::run()
 					trace = true;
 				}
 
- 				LogMessage("Network 1 Trans  TG: %d Slot: %d ", dstId,slotNo);
+ 				LogMessage("Network 1 Trans  TG: %d Slot: %d GWMode: %d", dstId,slotNo,GWmode);
 				if (trace)
 					LogDebug("Rule Trace, network 1 transmission: Slot=%u Src=%u Dst=%s%u", slotNo, srcId, flco == FLCO_GROUP ? "TG" : "", dstId);
 
@@ -845,7 +856,7 @@ int CDMRGateway::run()
 				m_repeater->writeBeacon();
 		}
 
-		if (m_dmrNetwork4 != NULL && selected_network == 4 ) {
+                if (m_dmrNetwork4 != NULL && ((selected_network == 4 && GWmode ==1) || GWmode == 0 )) {
 			ret = m_dmrNetwork4->read(data);
 			if (ret) {
 				unsigned int slotNo = data.getSlotNo();
@@ -860,7 +871,7 @@ int CDMRGateway::run()
 					trace = true;
 				}
 
- 					LogMessage("Network 4 Trans  TG: %d Slot: %d ", dstId,slotNo);
+ 					LogMessage("Network 4 Trans  TG: %d Slot: %d GWmode:%d", dstId,slotNo,GWmode);
 				if (trace)
 					LogDebug("Rule Trace, network 4 transmission: Slot=%u Src=%u Dst=%s%u", slotNo, srcId, flco == FLCO_GROUP ? "TG" : "", dstId);
 
@@ -891,7 +902,7 @@ int CDMRGateway::run()
 				m_repeater->writeBeacon();
 		}
 
-		if (m_dmrNetwork2 != NULL && selected_network == 2) {
+                if (m_dmrNetwork2 != NULL && ((selected_network == 2 && GWmode ==1) || GWmode == 0 )) {
 			ret = m_dmrNetwork2->read(data);
 			if (ret) {
 				unsigned int slotNo = data.getSlotNo();
@@ -905,6 +916,7 @@ int CDMRGateway::run()
 					dmr2DstId[slotNo] = dstId;
 					trace = true;
 				}
+ 					LogMessage("Network 2 Trans  TG: %d Slot: %d GWmode:%d", dstId,slotNo,GWmode);
 
 				if (trace)
 					LogDebug("Rule Trace, network 2 transmission: Slot=%u Src=%u Dst=%s%u", slotNo, srcId, flco == FLCO_GROUP ? "TG" : "", dstId);
@@ -935,7 +947,7 @@ int CDMRGateway::run()
 				m_repeater->writeBeacon();
 		}
 
-		if (m_dmrNetwork3 != NULL && selected_network == 3) {
+                if (m_dmrNetwork3 != NULL && ((selected_network == 3 && GWmode ==1) || GWmode == 0 )) {
 			ret = m_dmrNetwork3->read(data);
 			if (ret) {
 				unsigned int slotNo = data.getSlotNo();
@@ -949,6 +961,7 @@ int CDMRGateway::run()
 					dmr3DstId[slotNo] = dstId;
 					trace = true;
 				}
+ 					LogMessage("Network 3 Trans  TG: %d Slot: %d GWmode:%d", dstId,slotNo,GWmode);
 
 				if (trace)
 					LogDebug("Rule Trace, network 3 transmission: Slot=%u Src=%u Dst=%s%u", slotNo, srcId, flco == FLCO_GROUP ? "TG" : "", dstId);
@@ -982,7 +995,7 @@ int CDMRGateway::run()
 
 
 
-		if (m_dmrNetwork5 != NULL && selected_network == 5 ) {
+                if (m_dmrNetwork5 != NULL && ((selected_network == 5 && GWmode ==1) || GWmode == 0 )) {
 			ret = m_dmrNetwork5->read(data);
 			if (ret) {
 				unsigned int slotNo = data.getSlotNo();
@@ -996,7 +1009,7 @@ int CDMRGateway::run()
 					dmr5DstId[slotNo] = dstId;
 					trace = true;
 				}
-
+ 					LogMessage("Network 5 Trans  TG: %d Slot: %d GWmode:%d", dstId,slotNo,GWmode);
 				if (trace)
 					LogDebug("Rule Trace, network 5 transmission: Slot=%u Src=%u Dst=%s%u", slotNo, srcId, flco == FLCO_GROUP ? "TG" : "", dstId);
 
@@ -2043,15 +2056,19 @@ unsigned int CDMRGateway::getConfig(const std::string& name, unsigned char* buff
 	int height = m_conf.getInfoHeight();
 	if (height > 999)
 		height = 999;
+	 LogInfo("Height Set To: %d", height);
 
+	GWmode = m_conf.getInfoGWmode();
+	LogInfo("GWmode Set To: %d", GWmode);
+     
 	unsigned int rxFrequency = m_conf.getInfoRXFrequency();
 	unsigned int txFrequency = m_conf.getInfoTXFrequency();
 	std::string location     = m_conf.getInfoLocation();
 	std::string description  = m_conf.getInfoDescription();
 	std::string url          = m_conf.getInfoURL();
 
-	::sprintf((char*)buffer, "%-8.8s%09u%09u%02u%2.2s%8.8s%9.9s%03d%-20.20s%-19.19s%c%-124.124s%-40.40s%-40.40s", m_config + 0U,
-		rxFrequency, txFrequency, power, m_config + 28U, latitude, longitude, height, location.c_str(),
+	::sprintf((char*)buffer, "%-8.8s%09u%09u%02u%2.2s%8.8s%9.9s%03d%02d%-20.20s%-19.19s%c%-124.124s%-40.40s%-40.40s", m_config + 0U,
+		rxFrequency, txFrequency, power, m_config + 28U, latitude, longitude, height,GWmode,location.c_str(),
 		description.c_str(), m_config[89U], url.c_str(), m_config + 214U, m_config + 254U);
 
 	LogInfo("%s: New configuration message: %s", name.c_str(), buffer);

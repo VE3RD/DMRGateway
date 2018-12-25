@@ -91,6 +91,7 @@ public:
 	float        getInfoLatitude() const;
 	float        getInfoLongitude() const;
 	int          getInfoHeight() const;
+	int          getInfoGWmode() const;
 	std::string  getInfoLocation() const;
 	std::string  getInfoDescription() const;
 	std::string  getInfoURL() const;
@@ -230,6 +231,7 @@ private:
 	float        m_infoLatitude;
 	float        m_infoLongitude;
 	int          m_infoHeight;
+	int          m_infoGWmode;
 	std::string  m_infoLocation;
 	std::string  m_infoDescription;
 	std::string  m_infoURL;
