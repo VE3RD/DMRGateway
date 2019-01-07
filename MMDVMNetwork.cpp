@@ -115,7 +115,6 @@ bool CMMDVMNetwork::read(CDMRData& data)
 	// Is this a data packet?
 	if (::memcmp(m_buffer, "DMRD", 4U) != 0)
 		return false;
-
 	unsigned char seqNo = m_buffer[4U];
 
 	unsigned int srcId = (m_buffer[5U] << 16) | (m_buffer[6U] << 8) | (m_buffer[7U] << 0);
@@ -214,8 +213,10 @@ bool CMMDVMNetwork::write(const CDMRData& data)
 
 	buffer[54U] = data.getRSSI();
 
-	if (m_debug)
+
+	if (m_debug){
 		CUtils::dump(1U, "Transmitted out RF", buffer, HOMEBREW_DATA_PACKET_LENGTH);
+	}
 	m_socket.write(buffer, HOMEBREW_DATA_PACKET_LENGTH, m_rptAddress, m_rptPort);
 
 	return true;
@@ -300,8 +301,9 @@ void CMMDVMNetwork::clock(unsigned int ms)
 
 	if (length > 0 && m_rptAddress.s_addr == address.s_addr && m_rptPort == port) {
 		if (::memcmp(m_buffer, "DMRD", 4U) == 0) {
-			if (m_debug)
+			if (m_debug){
 				CUtils::dump(1U, "RF Received  - Sent Out to Network", m_buffer, length);
+			}
 			unsigned char len = length;
 			m_rxData.addData(&len, 1U);
 			m_rxData.addData(m_buffer, len);

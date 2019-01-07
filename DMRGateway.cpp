@@ -59,9 +59,8 @@ static bool m_killed = false;
 static int  m_signal = 0;
 unsigned int selected_network = 4;
 unsigned int sigcnt =0;
-//int GWmode = 0;   // 0=original with no switching,  1 =new using 90001-90005
-unsigned int GWmode =1;
-
+unsigned int GWmode =1; // 0=original with no switching,  1 =new using 90001-90005
+static bool switchid =0;
 
 
 #if !defined(_WIN32) && !defined(_WIN64)
@@ -528,24 +527,32 @@ int CDMRGateway::run()
 		if (ret) {
 			unsigned int slotNo = data.getSlotNo();
 			unsigned int srcId = data.getSrcId();
-			unsigned int dstId = data.getDstId();
-			FLCO flco = data.getFLCO();
+			unsigned int dstId = data.getDstId();  
+     			unsigned int ctrlCode=0;	
+		FLCO flco = data.getFLCO();
 
-			if(dstId >= 90000 && dstId <= 90005){
-                               if (GWmode == 0 ) {
-					dstId=9000;
-					LogMessage("Original Gateway Mode Selected");
-				} else {
-		
-					LogMessage("Switched Gateway Mode Selected");
+                      
+			if( dstId >= 90000 && dstId <= 90005 ){
+				switchid= true;
+				ctrlCode = 1;
+				if ( dstId == 90000 ){
+					GWmode =0;
+                                        LogMessage("Original Gateway Mode Selected - Filter Disabled");
+                                        LogDebug("TESTAA Network keyed: %d - IGNORED Code: %d ", dstId,ctrlCode);
+                                        selected_network = 0;
+				}else{ 
+					GWmode = 1;
+					LogMessage("TESTAA %d Switched Gateway Mode Selected : Switchmode %d,  Code: %d",dstId,switchid,ctrlCode);
+			//		LogDebug("TESTAA Network keyed: %d", dstId);
+					selected_network = dstId-90000;
+					
 				}
-
-				LogDebug("TESTAA Network keyed: %d", dstId);
-				selected_network = dstId-90000;
+				
 			} else{
-  				LogDebug("TESTAA TG: %d keyed", dstId);
+				switchid=false;
+				ctrlCode = 0;
+  				LogDebug("TESTAA TG: %d keyed   GWmode: %d   SwitchID %d    Code: %d", dstId,GWmode,switchid,ctrlCode);
 			}
-
 			if (flco == FLCO_GROUP && slotNo == m_xlxSlot && dstId == m_xlxTG) {
 				if (m_xlxReflector != m_xlxRoom || m_xlxNumber != m_xlxStartup)
 					m_xlxRelink.start();
@@ -621,7 +628,7 @@ int CDMRGateway::run()
 
 				bool rewritten = false;
 
-                           if (m_dmrNetwork1 != NULL && ((selected_network == 1 && GWmode ==1) || GWmode == 0 )) {
+                           if (m_dmrNetwork1 != NULL && switchid == false && ((selected_network == 1 && GWmode ==1) || GWmode == 0 )) {
 					rewritten=false;
                                         // Rewrite the slot and/or TG or neither
                                         for (std::vector<CRewrite*>::iterator it = m_dmr1RFRewrites.begin(); it != m_dmr1RFRewrites.end(); ++it) {
@@ -655,7 +662,7 @@ int CDMRGateway::run()
                                         }
                               }
 
-                           if (m_dmrNetwork2 != NULL && ((selected_network == 2 && GWmode ==1) || GWmode == 0 )) {
+                           if (m_dmrNetwork2 != NULL && switchid == false && ((selected_network == 2 && GWmode ==1) || GWmode == 0 )) {
 					// Rewrite the slot and/or TG or neither
 					rewritten=false;
 					for (std::vector<CRewrite*>::iterator it = m_dmr2RFRewrites.begin(); it != m_dmr2RFRewrites.end(); ++it) {
@@ -688,7 +695,7 @@ int CDMRGateway::run()
 						}
 					}
 				}
-                           if (m_dmrNetwork3 != NULL && ((selected_network == 3 && GWmode ==1) || GWmode == 0 )) {
+                           if (m_dmrNetwork3 != NULL && switchid == false && ((selected_network == 3 && GWmode ==1) || GWmode == 0 )) {
 					rewritten=false;
 					// Rewrite the slot and/or TG or neither
 					for (std::vector<CRewrite*>::iterator it = m_dmr3RFRewrites.begin(); it != m_dmr3RFRewrites.end(); ++it) {
@@ -722,7 +729,7 @@ int CDMRGateway::run()
 					}
 				}
 
-                           if (m_dmrNetwork4 != NULL && ((selected_network == 4 && GWmode ==1) || GWmode == 0 )) {
+                           if (m_dmrNetwork4 != NULL && switchid == false && ((selected_network == 4 && GWmode ==1) || GWmode == 0 )) {
 					// Rewrite the slot and/or TG or neither
 					rewritten=false;	
 					for (std::vector<CRewrite*>::iterator it = m_dmr4RFRewrites.begin(); it != m_dmr4RFRewrites.end(); ++it) {
@@ -753,7 +760,7 @@ int CDMRGateway::run()
 						}
 					}
 				}
-                           if (m_dmrNetwork5 != NULL && ((selected_network == 5 && GWmode ==1) || GWmode == 0 )) {
+                           if (m_dmrNetwork5 != NULL && switchid == false && ((selected_network == 5 && GWmode ==1) || GWmode == 0 )) {
 				rewritten = false;
 					// Rewrite the slot and/or TG or neither
 					for (std::vector<CRewrite*>::iterator it = m_dmr5RFRewrites.begin(); it != m_dmr5RFRewrites.end(); ++it) {
@@ -810,7 +817,7 @@ int CDMRGateway::run()
 			}
 		}
 
-                if (m_dmrNetwork1 != NULL && ((selected_network == 1 && GWmode ==1) || GWmode == 0 )) {
+                if (m_dmrNetwork1 != NULL && switchid==false && ((selected_network == 1 && GWmode ==1) || GWmode == 0 )) {
 			ret = m_dmrNetwork1->read(data);
 			if (ret) {
 				unsigned int slotNo = data.getSlotNo();
@@ -856,7 +863,7 @@ int CDMRGateway::run()
 				m_repeater->writeBeacon();
 		}
 
-                if (m_dmrNetwork4 != NULL && ((selected_network == 4 && GWmode ==1) || GWmode == 0 )) {
+                if (m_dmrNetwork4 != NULL && switchid==false && ((selected_network == 4 && GWmode ==1) || GWmode == 0 )) {
 			ret = m_dmrNetwork4->read(data);
 			if (ret) {
 				unsigned int slotNo = data.getSlotNo();
@@ -902,7 +909,7 @@ int CDMRGateway::run()
 				m_repeater->writeBeacon();
 		}
 
-                if (m_dmrNetwork2 != NULL && ((selected_network == 2 && GWmode ==1) || GWmode == 0 )) {
+                if (m_dmrNetwork2 != NULL && switchid == false && ((selected_network == 2 && GWmode ==1) || GWmode == 0 )) {
 			ret = m_dmrNetwork2->read(data);
 			if (ret) {
 				unsigned int slotNo = data.getSlotNo();
@@ -947,7 +954,7 @@ int CDMRGateway::run()
 				m_repeater->writeBeacon();
 		}
 
-                if (m_dmrNetwork3 != NULL && ((selected_network == 3 && GWmode ==1) || GWmode == 0 )) {
+                if (m_dmrNetwork3 != NULL && switchid ==false && ((selected_network == 3 && GWmode ==1) || GWmode == 0 )) {
 			ret = m_dmrNetwork3->read(data);
 			if (ret) {
 				unsigned int slotNo = data.getSlotNo();
@@ -995,7 +1002,7 @@ int CDMRGateway::run()
 
 
 
-                if (m_dmrNetwork5 != NULL && ((selected_network == 5 && GWmode ==1) || GWmode == 0 )) {
+                if (m_dmrNetwork5 != NULL && switchid == false && ((selected_network == 5 && GWmode ==1) || GWmode == 0 )) {
 			ret = m_dmrNetwork5->read(data);
 			if (ret) {
 				unsigned int slotNo = data.getSlotNo();
@@ -2058,8 +2065,8 @@ unsigned int CDMRGateway::getConfig(const std::string& name, unsigned char* buff
 		height = 999;
 	 LogInfo("Height Set To: %d", height);
 
-	GWmode = m_conf.getInfoGWmode();
-	LogInfo("GWmode Set To: %d", GWmode);
+//	GWmode = m_conf.getInfoGWmode();
+//	LogInfo("GWmode Set To: %d", GWmode);
      
 	unsigned int rxFrequency = m_conf.getInfoRXFrequency();
 	unsigned int txFrequency = m_conf.getInfoTXFrequency();
