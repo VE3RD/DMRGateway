@@ -62,6 +62,10 @@ unsigned int sigcnt =0;
 unsigned int GWmode =1; // 0=original with no switching,  1 =new using 90001-90005
 static bool switchid =0;
 
+unsigned int SpTgifTg[4] = {101,102,103,31665};
+unsigned int SpBmTg[4] = {310,311,312,313};
+
+
 
 #if !defined(_WIN32) && !defined(_WIN64)
 static void sigHandler(int signum)
@@ -85,6 +89,9 @@ enum DMRGW_STATUS {
 	DMRGWS_DMRNETWORK5,
 	DMRGWS_XLXREFLECTOR
 };
+
+
+
 
 const char* HEADER1 = "This software is for use on amateur radio networks only,";
 const char* HEADER2 = "it is to be used for educational purposes only. Its use on";
@@ -528,21 +535,37 @@ int CDMRGateway::run()
 			unsigned int slotNo = data.getSlotNo();
 			unsigned int srcId = data.getSrcId();
 			unsigned int dstId = data.getDstId();  
-     			unsigned int ctrlCode=0;	
-		FLCO flco = data.getFLCO();
+     			unsigned int ctrlCode=0;
+                        unsigned int tgifcnt = sizeof(SpTgifTg) / sizeof(SpTgifTg[0]);
+			unsigned int bmcnt= sizeof(SpBmTg) / sizeof(SpBmTg[0]);
 
-                      
+
+			FLCO flco = data.getFLCO();
+                       
+			for (unsigned int i = 0; i < tgifcnt; ++i){
+				if (SpTgifTg[i] ==  dstId) selected_network = 4;
+			}
+			for (unsigned int i = 0; i < bmcnt; ++i){
+				if (SpBmTg[i] ==  dstId) selected_network = 1;
+			}
+                  //      if (dstId == 31665 || dstId == 101 || dstId==102 || dstId == 103) {
+		//	 	selected_network = 4;
+		//	}
+			if( dstId >= 500000 && dstId <= 599999 ){
+				switchid=false;
+				selected_network = 4;
+			}
 			if( dstId >= 90000 && dstId <= 90005 ){
 				switchid= true;
 				ctrlCode = 1;
 				if ( dstId == 90000 ){
 					GWmode =0;
                                         LogMessage("Original Gateway Mode Selected - Filter Disabled");
-                                        LogDebug("TESTAA Network keyed: %d - IGNORED Code: %d ", dstId,ctrlCode);
+                                        LogDebug("TESTAA Network keyed: %d - IGNORED Code: %d,  Network: %d ", dstId,ctrlCode, selected_network);
                                         selected_network = 0;
 				}else{ 
 					GWmode = 1;
-					LogMessage("TESTAA %d Switched Gateway Mode Selected : Switchmode %d,  Code: %d",dstId,switchid,ctrlCode);
+					LogMessage("TESTAA %d Switched Gateway Mode Selected : Switchmode %d,  Code: %d, Network: %d",dstId,switchid,ctrlCode,selected_network);
 			//		LogDebug("TESTAA Network keyed: %d", dstId);
 					selected_network = dstId-90000;
 					
@@ -551,7 +574,7 @@ int CDMRGateway::run()
 			} else{
 				switchid=false;
 				ctrlCode = 0;
-  				LogDebug("TESTAA TG: %d keyed   GWmode: %d   SwitchID %d    Code: %d", dstId,GWmode,switchid,ctrlCode);
+  				LogDebug("TESTAA TG: %d keyed   GWmode: %d   SwitchID %d    Code: %d,  Network %d", dstId,GWmode,switchid,ctrlCode, selected_network);
 			}
 			if (flco == FLCO_GROUP && slotNo == m_xlxSlot && dstId == m_xlxTG) {
 				if (m_xlxReflector != m_xlxRoom || m_xlxNumber != m_xlxStartup)
