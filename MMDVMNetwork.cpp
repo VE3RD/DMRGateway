@@ -215,7 +215,7 @@ bool CMMDVMNetwork::write(const CDMRData& data)
 
 
 	if (m_debug){
-		CUtils::dump(1U, "Transmitted out RF", buffer, HOMEBREW_DATA_PACKET_LENGTH);
+		CUtils::dump(1U, "Transmitted Out RF", buffer, HOMEBREW_DATA_PACKET_LENGTH);
 	}
 	m_socket.write(buffer, HOMEBREW_DATA_PACKET_LENGTH, m_rptAddress, m_rptPort);
 
