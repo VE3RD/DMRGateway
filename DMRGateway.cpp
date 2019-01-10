@@ -546,29 +546,30 @@ int CDMRGateway::run()
 
 
 			FLCO flco = data.getFLCO();
-                       
-			for (unsigned int i = 0; i < tgifcnt; ++i){
-				if (SpTgifTg[i] ==  dstId){
-					GWmode=1;
-				 	selected_network = 4;
-					ctrlCode=0;
 
+                       if (selected_network != 0) {
+                       
+				for (unsigned int i = 0; i < tgifcnt; ++i){
+					if (SpTgifTg[i] ==  dstId){
+						GWmode=1;
+				 		selected_network = 4;
+						ctrlCode=0;
+					}
 				}
-			}
-			for (unsigned int i = 0; i < bmcnt; ++i){
-				if (SpBmTg[i] ==  dstId){
-					 selected_network = 1;
-					GWmode=1;
-					ctrlCode=0;
+				for (unsigned int i = 0; i < bmcnt; ++i){
+					if (SpBmTg[i] ==  dstId){
+					 	selected_network = 1;
+						GWmode=1;
+						ctrlCode=0;
+					}
 				}
+				if( dstId >= 500000 && dstId <= 599999 ){
+					ctrlCode =0;
+					selected_network = 4;
+				}
+
 			}
-                  //      if (dstId == 31665 || dstId == 101 || dstId==102 || dstId == 103) {
-		//	 	selected_network = 4;
-		//	}
-			if( dstId >= 500000 && dstId <= 599999 ){
-				ctrlCode =0;
-				selected_network = 4;
-			}
+
 			if( dstId >= 90000 && dstId <= 90005 ){
 				ctrlCode = 1;
 				if ( dstId == 90000 ){
