@@ -63,7 +63,7 @@ unsigned int GWmode =1; // 0=original with no switching,  1 =new using 90001-900
 static bool switchid =0;
 
 unsigned int SpTgifTg[4] = {101,102,103,31665};
-unsigned int SpBmTg[4] = {310,311,312,313};
+unsigned int SpBmTg[2] = {310,311};
 
 
 
@@ -97,6 +97,9 @@ const char* HEADER1 = "This software is for use on amateur radio networks only,"
 const char* HEADER2 = "it is to be used for educational purposes only. Its use on";
 const char* HEADER3 = "commercial networks is strictly prohibited.";
 const char* HEADER4 = "Copyright(C) 2017 by Jonathan Naylor, G4KLX and others";
+const char* HEADER5 = "Rev A 2018/11/17 By TY, KG5RKI Added Radio Control 90000-90003";
+const char* HEADER6 = "Rev B 2018/11/26 By Phil, VE3RD - Added Net 4 and 5";
+const char* HEADER7 = "Rev C 2019/01/09 By Phil, VE3RD - Added auto network switch on tg 50000.. and tg array";
 
 int main(int argc, char** argv)
 {
@@ -330,6 +333,9 @@ int CDMRGateway::run()
 	LogInfo(HEADER2);
 	LogInfo(HEADER3);
 	LogInfo(HEADER4);
+	LogInfo(HEADER5);
+	LogInfo(HEADER6);
+	LogInfo(HEADER7);
 
 	LogMessage("DMRGateway-%s is starting", VERSION);
 	LogMessage("Built %s %s (GitID #%.7s)", __TIME__, __DATE__, gitversion);
